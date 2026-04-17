@@ -6,7 +6,7 @@ import torch
 from dotenv import load_dotenv
 
 load_dotenv()
-showDebugStatements = True
+showDebugStatements = False
 
 
 """
@@ -81,6 +81,7 @@ You are a highly rigorous Scientific Research Assistant.
 Your goal is to give a comprehensive answer to the user's question using the provided context snippets.
 You must cite each claim you make with the format [Source, Page].
 Do not list bullet points, make your claims as complete senteces with citations.
+If you cannot answer the question using the context, only return \"I don't have enough information to answer this sorry\".
 """
 
     response = queryOpenAI(prompt = user_input, sysRole = system_prompt)
@@ -239,11 +240,13 @@ def evaluateReponse(context, statements, response, depth = 0):
                 if label[0] == 'entailment' or label[0] == 'neutral':
                     if showDebugStatements:
                         print("Incorrect statement corrected")
+                        break
                     nextLine = redidStatement
-            if attempt == 3:
-                nextLine = curStatement
-                if showDebugStatements:
-                    print("Couldn't correct incorrect statement")
+                attempt += 1
+                if attempt == 3:
+                    nextLine = curStatement
+                    if showDebugStatements:
+                        print("Couldn't correct incorrect statement")
         else:
             nextLine = statements[i]
         if correctedResponse == "":
@@ -265,6 +268,9 @@ def getScientificResponse(query):
     context, response = generateResponse(query)
     if showDebugStatements:
         print("Generated Base Response")
+    
+    if response == "I don't have enough information to answer this sorry":
+        return response, "Statements changed:\n\nNothing to change", {}
     
     ## Split by statement
     statements = extractStatements(response=response)
