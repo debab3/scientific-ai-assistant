@@ -1,5 +1,5 @@
 import streamlit as st
-from generateScientificResponse import generateResponse
+from generateScientificResponse import getScientificResponse
 import json
 
 st.set_page_config(page_title="Scientific AI Assistant", layout="wide")
@@ -16,10 +16,10 @@ query = st.text_input("Enter your scientific question:", placeholder="e.g. How d
 
 if query:
     with st.spinner("Searching papers and verifying claims..."):
-        context, response = generateResponse(query)
+        response, changes, stats = getScientificResponse(query)
 
         st.subheader("Answer")
         st.write(response)
 
-        with st.expander("View Cited Sources & Evidence"):
-            st.text(json.dumps(context))
+        with st.expander("View List of Errors Fixed"):
+            st.text(changes)
